@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="stylesheet" href="css/bootstrap.css">
+		<title>02</title>
+	</head>
+	<body>
+		<ul id="myTab" class="nav nav-pills" role="tablist">
+		    <li class="active"><a href="#bulletin" role="tab" data-toggle="pill">信息修改</a></li>
+		    <li><a href="#rule" role="tab" data-toggle="pill">sku展示</a></li>
+		</ul>
+		<!-- 选项卡面板 -->
+		<div id="myTabContent" class="tab-content">
+		    <div class="tab-pane fade in active" id="bulletin">公告内容面板</div>
+		    <div class="tab-pane fade" id="rule">
+				<table class="table">
+					<caption style="font-weight: bold;">以下为商品sku展示图</caption>
+					<thead>
+						<tr>
+							<th>颜色</th>
+							<th >尺寸</th>
+							<th width="360px" style="text-align: center;">图片</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr class="active">
+							<td style="vertical-align:middle;">Brick</td>
+							<td style="vertical-align:middle;">23</td>
+							<td style="text-align: center;">
+								<ul style="float:right;width: 100%;display: flex;-webkit-flex-flow: row;flex-wrap: nowrap;">
+								                <li style="width: 50px;height: 50px;float: right;margin:0px 5px;list-style: none;">
+								                    <span style="margin: 0px;padding: 0px;display: flex;height: 100%">
+								                        <img src="https://images-na.ssl-images-amazon.com/images/I/31mjd0vUsNL._AC_SR38,50_.jpg" width="100%" height="auto">
+								                    </span>
+								                </li>
+												<li style="width: 50px;height: 50px;float: right;margin:0px 5px;list-style: none;">
+												    <span style="margin: 0px;padding: 0px;display: flex;height: 100%">
+												        <img src="https://images-na.ssl-images-amazon.com/images/I/31y51vgFrRL._AC_SR38,50_.jpg" width="100%" height="auto">
+												    </span>
+												</li>
+												<li style="width: 50px;height: 50px;float: right;margin:0px 5px;list-style: none;">
+												    <span style="margin: 0px;padding: 0px;display: flex;height: 100%">
+												        <img src="https://images-na.ssl-images-amazon.com/images/I/31%2BNezY7gSL._AC_SR38,50_.jpg" width="100%" height="auto">
+												    </span>
+												</li>
+												<li style="width: 50px;height: 50px;float: right;margin:0px 5px;list-style: none;">
+												    <span style="margin: 0px;padding: 0px;display: flex;height: 100%">
+												        <img src="https://images-na.ssl-images-amazon.com/images/I/315s1VBOSLL._AC_SR38,50_.jpg" width="100%" height="auto">
+												    </span>
+												</li>
+								</ul>
+							</td>
+						</tr>
+						<tr class="active">
+							<td style="vertical-align:middle;">black</td>
+							<td style="vertical-align:middle;">11</td>
+							<td style="text-align: center;">
+								<ul style="float:right;width: 100%;display: flex;-webkit-flex-flow: row;flex-wrap: nowrap;">
+								                <li style="width: 50px;height: 50px;float: right;margin:5px;list-style: none;">
+								                    <span style="margin: 0px;padding: 0px;display: flex;height: 100%">
+								                        <img src="https://images-na.ssl-images-amazon.com/images/I/31JlKjnNhEL._AC_SR38,50_.jpg" width="100%" height="auto">
+								                    </span>
+								                </li>
+												<li style="width: 50px;height: 50px;float: right;margin:5px;list-style: none;">
+												    <span style="margin: 0px;padding: 0px;display: flex;height: 100%">
+												        <img src="https://images-na.ssl-images-amazon.com/images/I/31rdslpk9VL._AC_SR38,50_.jpg" width="100%" height="auto">
+												    </span>
+												</li>
+												<li style="width: 50px;height: 50px;float: right;margin:5px;list-style: none;">
+												    <span style="margin: 0px;padding: 0px;display: flex;height: 100%">
+												        <img src="https://images-na.ssl-images-amazon.com/images/I/31RYqjrt2VL._AC_SR38,50_.jpg" width="100%" height="auto">
+												    </span>
+												</li>
+												<li style="width: 50px;height: 50px;float: right;margin:5px;list-style: none;">
+												    <span style="margin: 0px;padding: 0px;display: flex;height: 100%">
+												        <img src="https://images-na.ssl-images-amazon.com/images/I/31hXPx4cuQL._AC_SR38,50_.jpg" width="100%" height="auto">
+												    </span>
+												</li>
+												
+								</ul>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</body>
+<script type="text/javascript">
+	$(function(){
+	    $("#myTab a").click(function(e){
+	        e.preventDefault();
+	        $(this).tab("show");
+	    });
+	})
+</script>
+<script src="js/jquery-3.5.1.js"></script>
+<script src="js/bootstrap.js"></script>
+<script src="js/popper.js"></script>
+</html>

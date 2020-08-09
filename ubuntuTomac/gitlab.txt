@@ -1,0 +1,11 @@
+docker pull twang2218/gitlab-ce-zh:10.5.4
+
+docker run --detach --hostname 192.168.152.132  --publish 443:443 --publish 80:80 --publish 222:22  --name gitlab  --restart always   --volume /srv/gitlab/config:/etc/gitlab  --volume /srv/gitlab/logs:/var/log/gitlab --volume /srv/gitlab/data:/var/opt/gitlab twang2218/gitlab-ce-zh:10.5.4
+
+
+docker run --detach --hostname 192.168.152.132  --publish 443:443 --publish 80:80 --publish 222:22  --name gitlab  --restart always   --volume /srv/gitlab/config:/etc/gitlab  --volume /srv/gitlab/logs:/var/log/gitlab --volume /srv/gitlab/data:/var/opt/gitlab twang2218/gitlab-ce-zh:10.5.4
+
+
+http://localhost/users/password
+
+

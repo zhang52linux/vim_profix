@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Pycharm
+Exec=/opt/pycharm-2019.3.3/bin/pycharm.sh
+Icon=/opt/pycharm-2019.3.3/bin/pycharm.png
+Categories=Application;Network;
+

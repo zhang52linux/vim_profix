@@ -1,0 +1,8 @@
+其他的配置信息:搜狗输入法、dash-to-dock
+网址:https://www.jianshu.com/p/6ef16e3b0a3e
+配置指令:
+sudo apt-get update
+sudo apt-get install gnome-tweak-tool
+sudo apt-get install gnome-shell-extensions
+sudo apt-get install  gnome-shell-extension-dashtodock
+

@@ -10,14 +10,40 @@ Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-fugitive'
 Plug 'brooth/far.vim'
 Plug 'majutsushi/tagbar'
+Plug 'ycm-core/YouCompleteMe'
+Plug 'Raimondi/delimitMate'
+Plug 'Chiel92/vim-autoformat'
+Plug 'soft-aesthetic/soft-era-vim'
+Plug 'yuttie/inkstained-vim'
+Plug 'ashfinal/vim-colors-violet'
+Plug 'Shougo/neosnippet.vim'
+Plug 'Shougo/neosnippet-snippets'
+Plug 'andialbrecht/sqlparse'
+Plug 'jiangmiao/auto-pairs'
 
 call plug#end()
 
+
+set encoding=utf-8
+set cindent  "自动缩进
 set paste
 set number
 syntax on
 " echo has("clipboard") 查看vim的编译选项中是否有clipboard
 set clipboard=unnamed "有clipboard的话可以让你直接复制粘贴系统剪切板的内容
+set smartindent
+set tabstop=4
+set shiftwidth=4
+set expandtab
+imap{ {}<ESC>i<CR><ESC>O
+
+
+"调节多个窗口的大小(开启鼠标功能)
+set mouse=v "设置为v模式，即表示在可视模式在可以使用鼠标进行拖拉操作
+nnoremap <silent> <Leader>+ :exe "resize " . (winheight(0) * 3/2)<CR>
+nnoremap <silent> <Leader>- :exe "resize " . (winheight(0) * 2/3)<CR>
+
+
 "autocmd vimenter * NERDTree
 let mapleader = ','  "以后使用，+ v就能够对文件进行定位
 map <C-n> :NERDTreeToggle<CR>
@@ -151,6 +177,268 @@ set foldmethod=syntax " 进入vim命令模式, za即可折叠或者关闭当前�
 " :Far foo bar **/*.py
 " :Fardo
 
+
+"vi/vim默认不支持c++11的语法提示，添加如下让它支持
+let g:syntastic_cpp_compiler_options = ' -std=c++11 -stdlib=libc++'
+
+
+:"vim-autoformat
+let g:formatdef_clangformat_google = '"clang-format -style google -"'  "我比较喜欢 google 风格的代码
+let g:formatters_c = ['clangformat_google']
+" let g:formatdef_harttle = '"astyle --style=attach --pad-oper"'
+" let g:formatters_cpp = ['harttle']
+" let g:formatters_java = ['harttle']
+let g:formatters_cpp = ['clangformat_google']
+let g:formatters_java = ['clangformat_google']
+"vim-autoformat对python的支持
+let g:formatter_yapf_style = 'pep8'
+
+
+
+"mysql的auto-format
+let g:formatdef_sqlformat = '"sqlformat --keywords upper -"'
+let g:formatters_sql = ['sqlformat']
+
+
+"vim-autoformat的映射
+noremap <F3> :Autoformat<CR>
+
+
+"自动编译运行c/c++
+"------------------------------------------------------------------------------
+"  < 判断操作系统是否是 Windows 还是 Linux >
+"------------------------------------------------------------------------------
+if(has("win32") || has("win64") || has("win95") || has("win16"))
+    let g:iswindows = 1
+else
+    let g:iswindows = 0
+endif
+ 
+"------------------------------------------------------------------------------
+"  < 判断是终端还是 Gvim >
+"------------------------------------------------------------------------------
+if has("gui_running")
+    let g:isGUI = 1
+else
+    let g:isGUI = 0
+endif
+ 
+"------------------------------------------------------------------------------
+"  < 编译、连接、运行配置 >
+"------------------------------------------------------------------------------
+" F9 一键保存、编译、连接存并运行
+map <F9> :call Run()<CR>
+imap <F9> <ESC>:call Run()<CR>
+ 
+" Ctrl + F9 一键保存并编译
+map <c-F9> :call Compile()<CR>
+imap <c-F9> <ESC>:call Compile()<CR>
+ 
+" Ctrl + F10 一键保存并连接
+map <c-F10> :call Link()<CR>
+imap <c-F10> <ESC>:call Link()<CR>
+ 
+let s:LastShellReturn_C = 0
+let s:LastShellReturn_L = 0
+let s:ShowWarning = 1
+let s:Obj_Extension = '.o'
+let s:Exe_Extension = '.exe'
+let s:Sou_Error = 0
+ 
+let s:windows_CFlags = 'gcc\ -fexec-charset=gbk\ -Wall\ -g\ -O0\ -c\ %\ -o\ %<.o'
+let s:linux_CFlags = 'gcc\ -Wall\ -g\ -O0\ -c\ %\ -o\ %<.o'
+ 
+let s:windows_CPPFlags = 'g++\ -fexec-charset=gbk\ -Wall\ -g\ -O0\ -c\ %\ -o\ %<.o'
+let s:linux_CPPFlags = 'g++\ -Wall\ -g\ -O0\ -c\ %\ -o\ %<.o'
+ 
+func! Compile()
+    exe ":ccl"
+    exe ":update"
+    if expand("%:e") == "c" || expand("%:e") == "cpp" || expand("%:e") == "cxx"
+        let s:Sou_Error = 0
+        let s:LastShellReturn_C = 0
+        let Sou = expand("%:p")
+        let Obj = expand("%:p:r").s:Obj_Extension
+        let Obj_Name = expand("%:p:t:r").s:Obj_Extension
+        let v:statusmsg = ''
+        if !filereadable(Obj) || (filereadable(Obj) && (getftime(Obj) < getftime(Sou)))
+            redraw!
+            if expand("%:e") == "c"
+                if g:iswindows
+                    exe ":setlocal makeprg=".s:windows_CFlags
+                else
+                    exe ":setlocal makeprg=".s:linux_CFlags
+                endif
+                echohl WarningMsg | echo " compiling..."
+                silent make
+            elseif expand("%:e") == "cpp" || expand("%:e") == "cxx"
+                if g:iswindows
+                    exe ":setlocal makeprg=".s:windows_CPPFlags
+                else
+                    exe ":setlocal makeprg=".s:linux_CPPFlags
+                endif
+                echohl WarningMsg | echo " compiling..."
+                silent make
+            endif
+            redraw!
+            if v:shell_error != 0
+                let s:LastShellReturn_C = v:shell_error
+            endif
+            if g:iswindows
+                if s:LastShellReturn_C != 0
+                    exe ":bo cope"
+                    echohl WarningMsg | echo " compilation failed"
+                else
+                    if s:ShowWarning
+                        exe ":bo cw"
+                    endif
+                    echohl WarningMsg | echo " compilation successful"
+                endif
+            else
+                if empty(v:statusmsg)
+                    echohl WarningMsg | echo " compilation successful"
+                else
+                    exe ":bo cope"
+                endif
+            endif
+        else
+            echohl WarningMsg | echo ""Obj_Name"is up to date"
+        endif
+    else
+        let s:Sou_Error = 1
+        echohl WarningMsg | echo " please choose the correct source file"
+    endif
+    exe ":setlocal makeprg=make"
+endfunc
+ 
+func! Link()
+    call Compile()
+    if s:Sou_Error || s:LastShellReturn_C != 0
+        return
+    endif
+    let s:LastShellReturn_L = 0
+    let Sou = expand("%:p")
+    let Obj = expand("%:p:r").s:Obj_Extension
+    if g:iswindows
+        let Exe = expand("%:p:r").s:Exe_Extension
+        let Exe_Name = expand("%:p:t:r").s:Exe_Extension
+    else
+        let Exe = expand("%:p:r")
+        let Exe_Name = expand("%:p:t:r")
+    endif
+    let v:statusmsg = ''
+    if filereadable(Obj) && (getftime(Obj) >= getftime(Sou))
+        redraw!
+        if !executable(Exe) || (executable(Exe) && getftime(Exe) < getftime(Obj))
+            if expand("%:e") == "c"
+                setlocal makeprg=gcc\ -o\ %<\ %<.o
+                echohl WarningMsg | echo " linking..."
+                silent make
+            elseif expand("%:e") == "cpp" || expand("%:e") == "cxx"
+                setlocal makeprg=g++\ -o\ %<\ %<.o
+                echohl WarningMsg | echo " linking..."
+                silent make
+            endif
+            redraw!
+            if v:shell_error != 0
+                let s:LastShellReturn_L = v:shell_error
+            endif
+            if g:iswindows
+                if s:LastShellReturn_L != 0
+                    exe ":bo cope"
+                    echohl WarningMsg | echo " linking failed"
+                else
+                    if s:ShowWarning
+                        exe ":bo cw"
+                    endif
+                    echohl WarningMsg | echo " linking successful"
+                endif
+            else
+                if empty(v:statusmsg)
+                    echohl WarningMsg | echo " linking successful"
+                else
+                    exe ":bo cope"
+                endif
+            endif
+        else
+            echohl WarningMsg | echo ""Exe_Name"is up to date"
+        endif
+    endif
+    setlocal makeprg=make
+endfunc
+ 
+func! Run()
+    let s:ShowWarning = 0
+    call Link()
+    let s:ShowWarning = 1
+    if s:Sou_Error || s:LastShellReturn_C != 0 || s:LastShellReturn_L != 0
+        return
+    endif
+    let Sou = expand("%:p")
+    let Obj = expand("%:p:r").s:Obj_Extension
+    if g:iswindows
+        let Exe = expand("%:p:r").s:Exe_Extension
+    else
+        let Exe = expand("%:p:r")
+    endif
+    if executable(Exe) && getftime(Exe) >= getftime(Obj) && getftime(Obj) >= getftime(Sou)
+        redraw!
+        echohl WarningMsg | echo " running..."
+        if g:iswindows
+            exe ":!%<.exe"
+        else
+            if g:isGUI
+                exe ":!gnome-terminal -e ./%<"
+            else
+                exe ":!./%<"
+            endif
+        endif
+        redraw!
+        echohl WarningMsg | echo " running finish"
+    endif
+endfunc
+
+
+"soft-era主题设置
+" Vim >=8.0 or Neovim >= 0.1.5
+if (has("termguicolors"))
+   set termguicolors
+endif
+
+" Neovim 0.1.3 or 0.1.4
+let $NVIM_TUI_ENABLE_TRUE_COLOR=1
+
 " vim default主题的设置
-colorscheme black_angus
+colorscheme soft-era
+
+
+"inkstained配置
+let g:lightline = {
+      \ 'colorscheme': 'inkstained',
+      \ 'component': {
+      \   'readonly': '%{&readonly?"":""}',
+      \ },
+      \ 'separator':    { 'left': '', 'right': '' },
+      \ 'subseparator': { 'left': '', 'right': '' },
+      \ }
+
+
+
+"violet主题设置
+nnoremap <silent> <Leader>b :call ToggleBackground()<CR>
+function! ToggleBackground()
+    if &background == "light"
+        set background=dark
+    else
+        set background=light
+    endif
+endfunction
+colorscheme violet
+
+
+"vim-autopairs
+let g:AutoPairs = {'(':')', '[':']', '{':'}',"'":"'",'"':'"'}     " 设置要自动配对的符号
+let g:AutoPairs['<']='>'   " 添加要自动配对的符号<>
+
+
 

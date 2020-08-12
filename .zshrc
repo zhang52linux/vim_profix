@@ -1,3 +1,5 @@
+export TERM="xterm-256color"
+ 
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
@@ -121,4 +123,6 @@ pasteinit() { OLD_SELF_INSERT=${${(s.:.)widgets[self-insert]}[2,3]} zle -N self-
 pastefinish() { zle -N self-insert $OLD_SELF_INSERT } 
 zstyle :bracketed-paste-magic paste-init pasteinit 
 zstyle :bracketed-paste-magic paste-finish pastefinish
+
+
 

@@ -13,7 +13,6 @@ expect {
     "Password" { send "$password\r" }
 }
 expect "$"
-# expect eof
 EOF
 done < ~/passwd.txt
 

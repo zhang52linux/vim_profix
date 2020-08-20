@@ -1,4 +1,4 @@
-#!/bin/bash
+!/bin/bash
 
 git add *
 git commit -m "add linux.pptx"
@@ -16,7 +16,7 @@ EOF
 done < ~/passwd.txt
 
 
-
+echo "hello happy"
 
 
 

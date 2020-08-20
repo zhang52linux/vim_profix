@@ -14,12 +14,7 @@ expect {
 }
 expect "#"
 expect EOF
-
-EOF
 done < ~/passwd.txt
-
-
-echo "hello happy"
 
 
 

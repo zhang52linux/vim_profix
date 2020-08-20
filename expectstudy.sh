@@ -1,6 +1,8 @@
 #!/bin/bash
 
 git add *
+git status
+sleep 3
 git commit -m "add linux.pptx"
 
 /usr/bin/expect <<-EOF 

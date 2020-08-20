@@ -12,7 +12,7 @@ expect {
     "Username" { send "$username\r"; exp_continue }
     "Password" { send "$password\r" }
 }
-expect "#"
+expect "$"
 expect eof
 EOF
 done < ~/passwd.txt

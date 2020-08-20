@@ -14,6 +14,7 @@ expect {
 }
 expect "#"
 expect EOF
+EOF
 done < ~/passwd.txt
 
 

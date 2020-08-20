@@ -13,7 +13,6 @@ expect {
     "Password" { send "$password\r" }
 }
 interact
-sleep 30
 EOF
 done < ~/passwd.txt
 

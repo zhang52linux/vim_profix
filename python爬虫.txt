@@ -1,0 +1,1457 @@
+﻿  aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaazz1、elenium与webdriver环境的配置及火狐的webdriver的下载:https://github.com/mozilla/geckodriver/releases
+2>python的requests文档的官网:http://cn.python-requests.org/zh_CN/latest/
+python自带库的文档官网:https://docs.python.org/zh-cn/3.7/library/index.html
+===========================================================
+在python下设置welenium+webdriver的方法是
+首先找到你的pip.exe的位置(为以后的下载selenium做准备)
+下载好对应的webdriver驱动，在官网即可下载
+然后利用cmd进入pip的目录输入命名pip install elenium
+下载好selenium
+之后在输入代码：
+from selenium import webdriver
+
+browser = webdriver.Chrome("G:\\chromedriver_win32\\chromedriver.exe")  //指定webdriver驱动的位置
+browser.get('http://www.baidu.com/')
+=============================================================
+在java中设置selenium+webdriver的方法类似
+在java的工程中新建一个lib文件夹
+在elenium官网下载对应的elenim的jar包(selenium-server-standalone-3.141.59.jar)
+放入lib中在add path添加到资源中
+在代码中写：System.setProperty("webdriver.chrome.driver", "G:\\chromedriver_win32\\chromedriver.exe");
+WebDriver web=new ChromeDriver();
+            web.get("https://www.onemanhua.com/10147/1/"+time+".html");
+==============================================================
+或者直接在pycharm中的控制台直接输入pip install elenium也行
+==============================================================
+requests库下载
+控制台直接输入pip install requests
+==============================================================
+2、截取视频的网址:https://www.iqiyi.com/v_19rvtyq35s.html
+通过去网上解析的到视频解析的接口:jx.598110.com/?url=  (复制粘贴网址即可)
+或者通过这个8090g无广告快速稳定解析:8090g.cn/jiexi/?url=  (复制粘贴网址即可)
+或者:jx.598110.com/v/2.php?url=
+例如:jx.598110.com/v/2.php?url=
+https://video.sigujx.com/m3u8/3_362389459_1582341457918.m3u8
+https://video.sigujx.com/m3u8/3_1680187318_1581741604836.m3u8
+3、打开抓包软件去进行网址的分析
+一旦出现.ts的或者.m4a或.mp4或者.m3u8的统统接下开去做分析
+得到对应的视频网址时去用代码去下载
+4、书写代码下载视频
+第九集的m3u8:https://baidu.oss.aliyuncs.gms-lighting.com/m3u8/2075.m3u8
+第十集的m3u8:https://baidu.oss.aliyuncs.gms-lighting.com/m3u8/2076.m3u8
+庆余年的m3u8:https://baidu.oss.aliyuncs.gms-lighting.com/m3u8/1567.m3u8   //第四集
+java代码：
+package com.spite.max;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import org.apache.commons.io.FileUtils;
+
+
+
+public class Spite
+{
+	private static int m_start = 2079;  //表示第一个集数的代号
+	private static int m_end = 2080;  //表示最后一个集数的代号
+	public static void main(String arg[]) throws IOException, InterruptedException
+	{
+		while(m_start <= m_end)
+		{
+			    File file_folder = new File("src_movie");
+			    if(!file_folder.exists())     //如果不存在则创建文件夹
+			    	file_folder.mkdir();
+				URL url = new URL("https://baidu.oss.aliyuncs.gms-lighting.com/m3u8/"+m_start+".m3u8");
+				URLConnection conn = url.openConnection();
+				conn.setRequestProperty("User-Agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:73.0) Gecko/20100101 Firefox/73.0");
+				FileWriter fw = new FileWriter(m_start+".m3u8");
+			    String line;
+			    BufferedReader file=new BufferedReader(new InputStreamReader(conn.getInputStream()));
+			    while((line=file.readLine())!=null)
+			    {
+			    	fw.write(line+"\r\n");
+			    }
+			    fw.close();	      //将对应的文件关闭
+			    File_Manage(m_start);   //视频文件资源的分割处理
+			    File_Down(m_start);     //视频文件资源的下载
+			    File_FFmpeg(m_start);   //将零散的ts视频文件进行整合
+			    File_Delete(m_start);  //将多余的视频辅助文件删除
+			    System.out.println(m_start+"下载完成!");
+			    if(m_start == m_end)
+			    {
+			    	System.out.println("视频全部下载完毕!"+"\n\n");	
+			    }else {
+				System.out.println("========================下一段视频========================"+"\n\n");
+				m_start++;	
+			    }
+	   }	
+    }
+	private static void File_Manage(int m_m3u8) throws IOException
+	{
+		FileReader fr = new FileReader(m_m3u8+".m3u8");
+		BufferedReader frbuff = new BufferedReader(fr); 
+		FileWriter fw = new FileWriter(m_m3u8+".txt");
+		BufferedWriter fwbuff = new BufferedWriter(fw);
+		String line;
+		while((line = frbuff.readLine())!=null)
+		{
+			if(line.startsWith("https")&&line.endsWith("jpg"))
+			{
+				String src = line.replaceAll(".jpg", ".ts");
+				fwbuff.write(src+"\r\n");
+			}
+		}
+		frbuff.close();
+		fwbuff.close();
+		File file_txt = new File(m_m3u8+".m3u8");
+		file_txt.delete();
+	}
+	private static void File_Down(int m_m3u8) throws IOException, InterruptedException
+	{
+		System.out.println("========================下载中========================");
+		ExecutorService exec = Executors.newCachedThreadPool();  //创建一个线程池加快下载速度 
+	    String line;
+	    int cur = 1;
+		FileReader fr = new FileReader(m_m3u8+".txt");
+		BufferedReader frbuff = new BufferedReader(fr); 
+		while((line = frbuff.readLine())!=null)
+		{		
+			final int m_cur = cur;
+			final String m_line = line;
+			/*常见的问题之一:某个任务在下载过程中突然对方的服务器关闭了连接，
+			//是服务器单方向的close不属于四次挥手，从而导致任务下载不完就结束了，线程死亡
+			 * 正常完成和未捕获的异常。如果想让任务结束，也只有这2种方式
+			 * 但是这个流还没有关闭导致不能使用
+			 * */
+			Runnable task = new Runnable() {
+				@Override
+				public void run() {
+					FileOutputStream fout = null;   //输出流
+					try {
+						URL	url = new URL(m_line);
+						URLConnection conn = url.openConnection();
+						conn.setRequestProperty("User-Agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:73.0) Gecko/20100101 Firefox/73.0");
+						InputStream in = conn.getInputStream();
+					    fout = new FileOutputStream(new File("src_movie/"+m_cur+".ts"));
+					    int bit=0;
+					    while((bit=in.read())!=-1)
+					    {
+					       fout.write(bit);
+					       fout.flush();
+					     }
+					    fout.close();	
+					    System.out.println(m_cur+".ts下载完成!");   
+					} catch (IOException e) {
+						//e.printStackTrace();
+						System.out.print("Error:"+m_cur+".ts"+"输入流关闭,");
+					} finally{
+						try {
+							fout.close();
+							System.out.println(m_cur+".ts"+"输出流关闭!");
+						} catch (IOException e) {
+							//e.printStackTrace();
+							System.out.println(m_cur+".ts"+"输出流关闭出现错误!");
+						}
+					}
+				}
+			};
+		    exec.submit(task);
+			cur++;	
+			Thread.sleep(500);  //防止:Read timed out就是已经连接成功，但是服务器没有及时返回数据，导致读超时。
+			//当一次性请求的任务过多时，服务器来不及响应导致Read Time out
+			//常见的问题:conntion reset,服务器那边断开了连接，原因是这边的请求过于频繁导致服务器来不及反应，或者说
+			//服务器崩溃了，从而断开连接，通过延时来缓解服务器的压力，保证数据的完整性
+	   } 
+		exec.shutdown();   //shutdown设置线程池中的线程的状态为停止，不会立即停止
+		while(true)
+		{
+			//isTerminated当调用shutdown()方法后，并且所有提交的任务完成后返回为true;
+			//isTerminated当调用shutdownNow()方法后，成功停止后返回为true;
+			//如果线程池任务正常完成，都为false
+			if(exec.isTerminated())   			
+			{
+				frbuff.close();
+				System.out.println("任务执行完毕！");
+				break;
+			}
+			Thread.sleep(1000);   
+		}
+		File file_txt = new File(m_m3u8+".txt");
+		file_txt.delete();
+		//还有一个情况就是connection time out原因是客户端发送syn包，而服务器没有响应
+		//此时可能就是本机的网络的问题了，导致服务器没有发送一个syn + ack的包过来
+		//在发送一个ack包
+		//四次挥手，发送fin表示不会再发送数据了，发送rsc表示既不发送数据也不接收数据
+		//连接只要三次，而断开需要四次，因为连接是单方的确定，而断开时双方向的确定
+		//即连接时只要知道服务器在线就可以发送数据了，而断开需要两个人都不在线才行
+		//不然任何一方的发送数据都会导致丢包
+	}
+
+	private static void File_FFmpeg(int m_m3u8) throws IOException, InterruptedException
+	{
+		FileWriter ffw = new FileWriter("movie.txt");
+		File file = new File("src_movie");
+		File[] list = file.listFiles();
+		for(int i = 0;i < list.length;++i)
+		{
+			ffw.write("file "+"src_movie/"+(i+1)+".ts"+"\r\n");
+			ffw.flush();
+		}
+		ffw.close();
+		//裸流的好处:不会写缓存、不会因为缺少一段而结束整个视频的合成
+		String command = "ffmpeg -loglevel quiet -f concat -i movie.txt  -c copy "+"movie_"+m_m3u8+".mp4";
+		Process process = Runtime.getRuntime().exec(command);
+		process.waitFor();     //-loglevel quiet,以裸流的方式进行重新编码,无抗误码机制
+		//可以防止子进程的输出流缓存区溢出阻塞主进程
+		File file_movie = new File("movie.txt");
+		file_movie.delete();	
+        //停止进程实质上就是关闭jvm,每运行一个java命令就有个jvm
+	    //每个jvm中只有一个进程就是他自己
+		process.destroy();    //将子进程结束，也就是关闭子进程的jvm
+	}
+	private static void File_Delete(int m_m3u8) throws IOException
+	{	
+		//删除多余的ts文件
+		FileUtils.forceDelete(new File("src_movie"));  //利用文件工具类去强制删除该文件夹下的所有文件及文件夹	
+	}
+}
+
+====================================有界面的爬虫===========================================================
+//设置日期:SimpleDateFormat的形式
+private static void showTime()
+ {
+	 SimpleDateFormat date = new SimpleDateFormat("HH:mm:ss");
+	 String time = date.format(new Date());
+	 label.setText(time);
+ }
+
+
+
+======================================================================================
+python的字符串的几种书写方式:
+1、url = "%04d"%i
+2、"src/{}".format("movie.mp4")
+3、format(url[5:])截取第5个之后的全部字符
+=====================================腾讯视频的下载========================================================
+import requests        #网络请求模块
+from multiprocessing import Pool    #引入进程池，加快下载的速度
+import os                      #导入os模块去进行文件的操作和cmd命令的执行，提供很多系统功能的接口函数
+
+def down_web(index):
+    url = "https://apd-d564e6a55f5fd42e5bd77304bfeb91b8.v.smtcdns.com/vipts.tc.qq.com/AhYl1jbOW3XVTNaayaMSm3G8uALHIShgcMlNTpUFOHKk/uwMROfz2r5xgoaQXGdGnC2df64_gcR4DH6oNabw6qBdCnk2E/aahashtAA6GuBveLtDf9bQ4GP7pt_O7PkqDkT5Ra-5h5ePZLBlvOfnFoqoUBqUHXnjULBSINy53qPIJxlObPPievVseCrwRlShE4fSvEfL3YavE_l534cFktowD--sFf_hZNwUpnPCEFymq2FojCCY5dpWx0ucknOz7RleIewYw/086_l0033wtb8cw.321003.3.ts?index=86&start=881360&end=893360&brs=52220572&bre=56835971&ver=4"
+    data = requests.get(url)
+    with open("1.ts", "wb") as file:
+        file.write(data.content)
+
+if __name__ == "__main__":
+    pool = Pool(1)  #创建一个进程池
+    file = open("movie.txt","w")
+    for index in range(1):
+        pool.apply_async(down_web(index+1))  # 往线程池里面加入任务,apply_async表示的是非阻塞进程，一起执行
+        file.write("file {}.ts".format(index+1))
+        file.flush()
+    pool.close()      #设置此时进程池的状态为关闭,不再接收新的任务
+    pool.join()       #阻塞主进程，等待子进程全部结束
+    file.close()      #关闭打开的文件
+    os.system(r"ffmpeg -f concat -i movie.txt -c copy {}.mp4".format("武庚纪"))      #对下载好的文件去进行合成
+    os.system("del *.ts")    #执行cmd命令行去直接删除文件夹下的指定后缀的文件
+    os.system("del movie.txt")   #删除movie.txt
+    print("文件下载完成!")      #打印结束
+============================json与urlretrieve================================================================
+import requests        #网络请求模块
+import json       #对json数据进行反序列化为python对象，编解码json数据
+from urllib.request import urlretrieve   #直接根据网址，文件名下载
+
+    url_jx = 'https://api.sigujx.com/zy/sigu_jx.php'
+    link = 'https://v.qq.com/x/cover/ipmc5u3dwb48mv2/l0033wtb8cw.html'
+    data = {"url":link}
+    src_movie = requests.post(url_jx,data = data).text
+    src_movie = json.loads(src_movie)    #对包含json文档的str进行反序列化
+    #urlretrieve('https://'+link[0]+'.zip',"file.zip")
+    print(src_movie)
+==================================webdriver与无窗口操作=====================================================
+from selenium import webdriver    #导入selenium模块
+
+if __name__ == '__main__':
+    opt = webdriver.ChromeOptions()   #创建Chrome的参数对象
+    opt.add_argument('headless')         #设置无窗口模式
+    driver = webdriver.Chrome('G:\chromedriver_win32\chromedriver.exe',options=opt)
+    driver.get('https://v.qq.com/x/cover/ipmc5u3dwb48mv2/l0033wtb8cw.html')
+    driver.implicitly_wait(5)   #智能等待器，什么时候加载完什么时候结束，最迟5s
+    print(driver.page_source)   #打印页面源码
+例子:利用接口api:http://vip.66parse.club/去下载电影
+import requests        #网络请求模块
+from urllib.request import urlretrieve
+from selenium import webdriver
+
+if __name__ == '__main__':
+    name = input("请输入视频的名字:")
+    url = input("请输入视频的链接:")
+    opt = webdriver.ChromeOptions()  # 创建Chrome的参数对象
+    opt.add_argument('headless')  # 设置无窗口模式
+    driver = webdriver.Chrome('G:\chromedriver_win32\chromedriver.exe', options=opt)
+    driver.get('http://vip.66parse.club/?url={}'.format(url))
+    driver.implicitly_wait(60)  # 智能等待器，什么时候加载完什么时候结束，最迟60s
+    link = driver.find_element_by_tag_name('video').get_attribute('src')
+    urlretrieve(link,"{}.mp4".format(name))
+=================================python的正则表达式的学习=============================================================
+from selenium import webdriver    #导入selenium模块
+import re #导入re模块去进行正则表达式
+from urllib.request import urlretrieve   #可根据url去直接下载文件
+
+if __name__ == '__main__':
+    opt = webdriver.ChromeOptions()   #创建Chrome的参数对象
+    opt.add_argument('headless')         #设置无窗口模式
+    driver = webdriver.Chrome('G:\chromedriver_win32\chromedriver.exe',options=opt)
+    driver.get('https://phantomjs.org/download.html')
+
+    driver.implicitly_wait(5)   #智能等待器，什么时候加载完什么时候结束，最迟5s
+    #driver.get_screenshot_as_file("screen.png")
+    data = driver.page_source   #打印页面源码
+    # .,?,+,*,{}等等都是贪婪匹配，加?的作用:表义上是尽可能少的匹配，如.*为匹配0次到任意次，.*?则为匹配0次
+    #或者说"https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-windows.zip">phantomjs-2.1.1-windows.zip
+    #对于https://.*\.zip来说我们的结尾是zip但是上面有两个zip，https://.*\.zip表示以最后面的为结尾即匹配结果:https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-windows.zip">phantomjs-2.1.1-windows.zip
+    #对于https://.*?\.zip则表示以第一个zip为结尾即匹配结果:https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-windows.zip"
+    rc = re.compile('https://.*?\.zip')
+    link = re.findall(rc,data)
+    urlretrieve(link[0],"file.zip")
+例如:
+{'ret': 200, 'data': {'trackId': 208103438, 'canPlay': True, 'isPaid': False, 'hasBuy': True, 
+'src': 'https://fdfs.xmcdn.com/group65/M06/6F/A2/wKgMdF1mIuyQwiZEAHnhir82MOc285.m4a', 
+'albumIsSample': False, 'sampleDuration': 0, 'isBaiduMusic': False, 'firstPlayStatus': True}}
+可通过如下表达式去获取src:
+reg = re.compile('\'src\': \'(.*?)\',')
+    list = re.findall(reg,data)
+或者对于字典可直接用:print(html['data']['src'])
+#js的正则表达式:
+var src = "G:/dshuhsdu/shjchj.mp3";
+var exp = /G:\/[a-z]+\/[a-z]+\.mp3/ig;
+window.alert(src.match(exp))     /match表示把所有的全匹配出来
+/g:表示多个匹配 /i:表示忽越大小写 /m:表示多行匹配
+java的正则表达式:
+private String reg="\\d+@\\w*\\.\\w{3}";//正则表达式
+space.matches("456581464@qq.com");
+====================================post请求=============================================================
+    head = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:73.0) Gecko/20100101 Firefox/73.0',
+        'Referer': 'http://www.tv365.vip/seacher-%E5%8F%B6%E9%97%AE.html'
+    }
+    values = {
+        'url': 'https://v.qq.com/x/cover/ipmc5u3dwb48mv2/l0033wtb8cw.html'
+    }
+    request = requests.post('http://vip.66parse.club/', data=values, json=head)
+    return request.text
+========================================模拟登陆============================================
+    opt = webdriver.ChromeOptions()  # 创建Chrome的参数对象
+    opt.add_argument('headless')  # 设置无窗口模式
+    driver = webdriver.Chrome('G:\chromedriver_win32\chromedriver.exe', options=opt)
+    driver.get('http://blog.cumtpn.com/vipvideo/?index=0&src=https://v.qq.com/x/cover/ipmc5u3dwb48mv2/s003381ahll.html')
+    input_url = driver.find_element_by_id('url')
+    input_url.send_keys('https://v.qq.com/x/cover/y0jueuihog64xhb/d00290b15of.html')
+    play = driver.find_element_by_id('okbutton')
+    play.click()
+    driver.implicitly_wait(20)  # 智能等待器，什么时候加载完什么时候结束，最迟60s
+    print(driver.page_source)
+==================================有界面的电影下载器=====================================================================
+import requests        #网络请求模块
+from urllib.request import urlretrieve
+from selenium import webdriver
+
+if __name__ == '__main__':
+    name = input("请输入视频的名字:")
+    url = input("请输入视频的链接:")
+    print("解析中...")
+    opt = webdriver.ChromeOptions()  # 创建Chrome的参数对象
+    opt.add_argument('headless')  # 设置无窗口模式
+    driver = webdriver.Chrome('G:\chromedriver_win32\chromedriver.exe', options=opt)
+    driver.get('http://vip.66parse.club/?url={}'.format(url))
+    driver.implicitly_wait(60)  # 智能等待器，什么时候加载完什么时候结束，最迟60s
+    link = driver.find_element_by_tag_name('video').get_attribute('src')
+    filename = "{}.mp4".format(name)
+    data = requests.get(link)
+    with open(filename,"wb") as file:
+        file.write(data.content)
+==================================有界面的漫画下载器=====================================================================
+import requests
+from selenium import webdriver
+from multiprocessing import Pool
+import time
+import os
+
+
+
+def down_manhua(url,filename):
+    data = requests.get(url)
+    with open(filename,"wb") as file:
+        file.write(data.content)
+
+if __name__ == '__main__':
+        name = input("请输入想看的漫画名:")
+        num =  input("请输入想看漫画的第几章:")
+        print("解析中...")
+        opt = webdriver.ChromeOptions()  # 创建Chrome的参数对象
+        opt.add_argument('headless')  # 设置无窗口模式
+        driver = webdriver.Chrome(executable_path='G:\chromedriver_win32\chromedriver.exe', options=opt)
+        driver.get('https://www.onemanhua.com/search?searchString={}'.format(name))
+        text = driver.find_element_by_xpath('/html/body/div[3]/div/div/div[1]/div/div[1]/dl/dd[2]/a').get_attribute('href')
+        driver.get('{}1/{}.html'.format(text, num))
+        driver.execute_script('window.scrollBy(0, document.body.scrollHeight)')
+        time.sleep(30)      #强制等待timeout秒,让网页去加载图片
+        elements = driver.find_elements_by_class_name('mh_comicpic > img')
+        pool = Pool(20)
+        for item in elements:
+            url = item.get_attribute('src')
+            filename = "{}".format(url[-8:])
+            pool.apply_async(down_manhua,(url,filename))
+            print(filename+" 下载完成!")
+        pool.close()
+        pool.join()
+        print("解析结束!")
+=================================有关火狐的webdriver的使用===================================================================
+import requests
+from selenium import webdriver
+from multiprocessing import Pool
+import time
+import os
+
+
+
+def down_manhua(url,title,filename):
+    data = requests.get(url)
+    with open('{}/{}_{}'.format('漫画',title,filename),"wb") as file:
+        file.write(data.content)
+
+if __name__ == '__main__':
+        name = input("请输入想看的漫画名:")
+        num =  input("请输入想看漫画的第几章:")
+        print("解析中...")
+        opt = webdriver.FirefoxOptions()  # 创建Chrome的参数对象
+        opt.add_argument('--headless')    #设置无窗口模式
+        driver = webdriver.Firefox(executable_path='G:\geckodriver\geckodriver.exe',options=opt)
+        driver.get('https://www.onemanhua.com/search?searchString={}'.format(name))
+        text = driver.find_element_by_xpath('/html/body/div[3]/div/div/div[1]/div/div[1]/dl/dd[2]/a').get_attribute('href')
+        driver.get('{}1/{}.html'.format(text, num))
+        driver.execute_script('window.scrollBy(0, document.body.scrollHeight)')
+        time.sleep(30)      #强制等待timeout秒,让网页去加载图片
+        elements = driver.find_elements_by_class_name('mh_comicpic > img')
+        pool = Pool(20)
+        for item in elements:
+            url = item.get_attribute('src')
+            filename = "{}".format(url[-8:])
+            pool.apply_async(down_manhua,(url,driver.title,filename))
+            print(filename+" 下载完成!")
+        pool.close()
+        pool.join()
+        print("解析结束!")
+        driver.quit()   #退出浏览器
+============================================================================================
+import requests        #网络请求模块
+from urllib.request import urlretrieve
+from selenium import webdriver
+import time
+
+if __name__ == '__main__':
+    proxy = '175.155.141.88:1133'   #代理服务器IP
+    # profileDir = r'C:\Users\Administrator\AppData\Roaming\Mozilla\Firefox\Profiles\suetln79.default-release'
+    # profile = webdriver.FirefoxProfile(profileDir)   #设置浏览器的参数
+    opt = webdriver.FirefoxOptions()  # 创建Chrome的参数对象
+    #opt.add_argument('--Cookie=Hm_lvt_edc193f077b6b613964bcf4bbf0712d2=1582896717,1582897040,1582898316,1582898386; Hm_lpvt_edc193f077b6b613964bcf4bbf0712d2=1582898387')
+    opt.add_argument('--Referer=http://www.jspoo.com/vip.html')   #设置初始网址
+    #opt.add_argument('--headless')  # 设置无窗口模式
+    #opt.add_argument('proxy-server={0}'.format(proxy))  #设置代理服务器
+    opt.add_argument('--User-Agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:73.0) Gecko/20100101 Firefox/73.0')
+    driver = webdriver.Firefox(executable_path=r'G:\geckodriver\geckodriver.exe',options=opt)
+    driver.get("http://www.jspoo.com/vip.html")
+    url = driver.find_element_by_xpath('//*[@id="myinput"]')
+    url.send_keys('https://v.qq.com/x/cover/ipmc5u3dwb48mv2/l0033wtb8cw.html')
+    btn = driver.find_element_by_xpath('/html/body/div[1]/div[2]/div/div[6]/div[2]/div[2]/div/form/p/input[2]')
+    btn.click()
+    time.sleep(60)
+    driver.switch_to_window(window_name='思古视频服务:快速_稳定')
+    time.sleep(10)
+    print(driver.page_source)
+    driver.close()
+===================================循环爬取漫画====================================================
+import requests
+from selenium import webdriver
+from multiprocessing import Pool
+import time
+import os
+
+
+
+def down_manhua(url,title,filename):
+    data = requests.get(url)
+    with open('{}/{}_{}'.format('漫画',title,filename),"wb") as file:
+        file.write(data.content)
+
+if __name__ == '__main__':
+        name = input("请输入想看的漫画名:")
+        start =  int(input("请输入你要从哪一章开始看:"))
+        end = int(input("请输入你要看到哪一章:"))
+        print("解析中...")
+        opt = webdriver.ChromeOptions()  # 创建Chrome的参数对象
+        opt.add_argument('--headless')    #设置无窗口模式
+        driver = webdriver.Chrome(executable_path='G:\chromedriver_win32\chromedriver.exe', options=opt)
+        driver.get('https://www.onemanhua.com/search?searchString={}'.format(name))
+        text = driver.find_element_by_xpath('/html/body/div[3]/div/div/div[1]/div/div[1]/dl/dd[2]/a').get_attribute('href')
+        while start <= end:
+            driver.get('{}1/{}.html'.format(text, start))
+            driver.execute_script('window.scrollBy(0, document.body.scrollHeight)')
+            time.sleep(60)      #强制等待timeout秒,让网页去加载图片
+            elements = driver.find_elements_by_class_name('mh_comicpic > img')
+            pool = Pool(20)
+            for item in elements:
+                url = item.get_attribute('src')
+                filename = "{}".format(url[-8:])
+                pool.apply_async(down_manhua,(url,driver.title,filename))
+                print(filename+" 下载完成!")
+            pool.close()
+            pool.join()
+            start = start + 1
+            print('*'*30)
+        print("解析结束!")
+        driver.quit()   #退出浏览器
+===================================JS破解有道翻译==========================================================
+import requests
+import hashlib
+import time,random,re
+
+'''
+Title : JS破解有道翻译
+Author: ZSY
+Date : 2020-02-29
+'''
+
+def make_md5(string):
+    string = string.encode('utf-8')
+    md5 = hashlib.md5(string).hexdigest()
+    return md5
+
+def fanyi(string):
+    bv= make_md5('5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.122 Safari/537.36')
+    ts = str(time.time()*1000)
+    salt = ts + str(random.randint(0,9))
+    sign = make_md5('fanyideskweb'+string+salt+'Nw(nmmbP%A-r6U3EUn]Aj')
+    words = {
+           'i': string,
+           'from': 'AUTO',
+           'to': 'AUTO',
+           'smartresult': 'dict',
+           'client': 'fanyideskweb',
+           'salt': salt,
+           'sign': sign,
+           'ts': ts,
+           'bv': bv,
+           'doctype': 'json',
+           'version': '2.1',
+           'keyfrom': 'fanyi.web',
+           'action': 'FY_BY_CLICKBUTTION'}
+    headers = {
+           'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 13_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.5 Mobile/15E148 Safari/604.1',
+           'Host': 'fanyi.youdao.com',
+           'Proxy - Connection': 'keep - alive',
+           'Content - Length': '255',
+           'Accept': 'application / json, text / javascript, * / *; q = 0.01',
+           'X - Requested - With': 'XMLHttpRequest',
+           'Content - Type': 'application / x - www - form - urlencoded;charset = UTF - 8',
+           'Origin': 'http: // fanyi.youdao.com',
+           'Referer': 'http: // fanyi.youdao.com /',
+           'Accept - Encoding': 'gzip, deflate',
+           'Accept - Language': 'zh - CN, zh;q = 0.9',
+           'Cookie': 'OUTFOX_SEARCH_USER_ID=-1800032447@10.169.0.84; JSESSIONID=aaaWjmzi9FlrMfmv6Rocx; OUTFOX_SEARCH_USER_ID_NCOO=1579005371.5538337; ___rl__test__cookies=1582943087521'}
+    url = 'http://fanyi.youdao.com/translate_o?smartresult=dict&smartresult=rule'
+    data = requests.post(url=url, data=words, headers=headers).text
+    reg = re.compile(':".*?",')
+    data = re.findall(reg, data)
+    print('翻译的结果为:' + data[0][2:-2])
+
+
+if __name__ == '__main__':
+    while True:
+        string = input("请输入你要进行翻译的内容:")
+        fanyi(string)
+
+=======================================网易云音乐歌词提取器==================================================================
+from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtGui import QIcon
+from selenium import webdriver
+from multiprocessing import Pool
+import time,os,execjs,sys,requests,json
+
+
+class Ui_Form(object):
+    def setupUi(self, Form):
+        Form.setObjectName("Form")
+        Form.resize(794, 487)
+        Form.setStyleSheet("background-color:rgb(123,123,255);")
+        self.label = QtWidgets.QLabel(Form)
+        self.label.setGeometry(QtCore.QRect(10, 40, 211, 31))
+        self.label.setStyleSheet("font: 10pt \"华文行楷\";")
+        self.label.setObjectName("label")
+        self.lineEdit = QtWidgets.QLineEdit(Form)
+        self.lineEdit.setGeometry(QtCore.QRect(230, 40, 541, 31))
+        self.lineEdit.setStyleSheet("font: 10pt \"华文行楷\";")
+        self.lineEdit.setText("")
+        self.lineEdit.setObjectName("lineEdit")
+        self.label_2 = QtWidgets.QLabel(Form)
+        self.label_2.setGeometry(QtCore.QRect(10, 124, 191, 31))
+        self.label_2.setStyleSheet("font: 10pt \"华文行楷\";")
+        self.label_2.setObjectName("label_2")
+        self.label_3 = QtWidgets.QLabel(Form)
+        self.label_3.setGeometry(QtCore.QRect(370, 120, 191, 31))
+        self.label_3.setStyleSheet("font: 10pt \"华文行楷\";")
+        self.label_3.setObjectName("label_3")
+        self.lineEdit_2 = QtWidgets.QLineEdit(Form)
+        self.lineEdit_2.setGeometry(QtCore.QRect(210, 120, 113, 31))
+        self.lineEdit_2.setStyleSheet("font: 10pt \"华文行楷\";")
+        self.lineEdit_2.setObjectName("lineEdit_2")
+        self.lineEdit_3 = QtWidgets.QLineEdit(Form)
+        self.lineEdit_3.setGeometry(QtCore.QRect(610, 120, 113, 31))
+        self.lineEdit_3.setStyleSheet("font: 10pt \"华文行楷\";")
+        self.lineEdit_3.setObjectName("lineEdit_3")
+        self.listWidget = QtWidgets.QListWidget(Form)
+        self.listWidget.setGeometry(QtCore.QRect(10, 230, 771, 241))
+        self.listWidget.setStyleSheet("font: 10pt \"华文行楷\";")
+        self.listWidget.setObjectName("listWidget")
+        self.label_4 = QtWidgets.QLabel(Form)
+        self.label_4.setGeometry(QtCore.QRect(10, 190, 81, 31))
+        self.label_4.setStyleSheet("font: 10pt \"华文行楷\";")
+        self.label_4.setObjectName("label_4")
+        self.pushButton = QtWidgets.QPushButton(Form)
+        self.pushButton.setGeometry(QtCore.QRect(680, 190, 93, 28))
+        self.pushButton.setStyleSheet("font: 10pt \"华文行楷\";")
+        self.pushButton.setObjectName("pushButton")
+
+        self.retranslateUi(Form)
+        QtCore.QMetaObject.connectSlotsByName(Form)
+        self.pushButton.clicked.connect(Form.start_spite)
+
+    def retranslateUi(self, Form):
+        _translate = QtCore.QCoreApplication.translate
+        Form.setWindowTitle(_translate("Form", "Form"))
+        self.label.setText(_translate("Form", "请输入你要看的漫画的名字:"))
+        self.label_2.setText(_translate("Form", "请输入你要从那一章开始看:"))
+        self.label_3.setText(_translate("Form", "请输入你要从那一章开始看:"))
+        self.label_4.setText(_translate("Form", "下载列表:"))
+        self.pushButton.setText(_translate("Form", "下载"))
+
+class manhua_download(QtWidgets.QMainWindow,Ui_Form):
+    def __init__(self):
+        super(manhua_download,self).__init__()
+        self.setupUi(self)
+        self.setWindowTitle('全能漫画下载器')
+        self.setWindowIcon(QIcon('format.ico'))
+        self.listWidget.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)  #不显示滚动条
+
+    def start_spite(self):
+        self.listWidget.addItem('解析中......')
+        data = requests.get('https://api.imjad.cn/cloudmusic/?type=lyric&id=167827').text
+        data = json.loads(data)
+        lrc_src = data['lrc']
+        list = lrc_src['lyric'].split('\n')  # 以'\n'作为分离器
+        for item in list:
+            self.listWidget.addItem(item)
+
+
+if __name__ == '__main__':
+    app = QtWidgets.QApplication(sys.argv)
+    form = manhua_download()
+    form.show()
+    sys.exit(app.exec())
+========================================网易云音乐下载器===============================================================
+from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtGui import QIcon
+from selenium import webdriver
+from multiprocessing import Pool
+import time,os,execjs,sys,requests,json,lxml,re
+from bs4 import BeautifulSoup
+#execjs的exal可以直接运行js代码,call()可以运行函数，但是只是负责运行不会对实际的窗口产生影响
+
+
+class Ui_Form(object):
+    def setupUi(self, Form):
+        Form.setObjectName("Form")
+        Form.resize(794, 487)
+        Form.setStyleSheet("background-color:rgb(123,123,255);")
+        self.label = QtWidgets.QLabel(Form)
+        self.label.setGeometry(QtCore.QRect(10, 40, 211, 31))
+        self.label.setStyleSheet("font: 10pt \"华文行楷\";")
+        self.label.setObjectName("label")
+        self.lineEdit = QtWidgets.QLineEdit(Form)
+        self.lineEdit.setGeometry(QtCore.QRect(230, 40, 541, 31))
+        self.lineEdit.setStyleSheet("font: 10pt \"华文行楷\";")
+        self.lineEdit.setText("")
+        self.lineEdit.setObjectName("lineEdit")
+        self.label_2 = QtWidgets.QLabel(Form)
+        self.label_2.setGeometry(QtCore.QRect(10, 124, 191, 31))
+        self.label_2.setStyleSheet("font: 10pt \"华文行楷\";")
+        self.label_2.setObjectName("label_2")
+        self.label_3 = QtWidgets.QLabel(Form)
+        self.label_3.setGeometry(QtCore.QRect(370, 120, 191, 31))
+        self.label_3.setStyleSheet("font: 10pt \"华文行楷\";")
+        self.label_3.setObjectName("label_3")
+        self.lineEdit_2 = QtWidgets.QLineEdit(Form)
+        self.lineEdit_2.setGeometry(QtCore.QRect(210, 120, 113, 31))
+        self.lineEdit_2.setStyleSheet("font: 10pt \"华文行楷\";")
+        self.lineEdit_2.setObjectName("lineEdit_2")
+        self.lineEdit_3 = QtWidgets.QLineEdit(Form)
+        self.lineEdit_3.setGeometry(QtCore.QRect(610, 120, 113, 31))
+        self.lineEdit_3.setStyleSheet("font: 10pt \"华文行楷\";")
+        self.lineEdit_3.setObjectName("lineEdit_3")
+        self.listWidget = QtWidgets.QListWidget(Form)
+        self.listWidget.setGeometry(QtCore.QRect(10, 230, 771, 241))
+        self.listWidget.setStyleSheet("font: 10pt \"华文行楷\";")
+        self.listWidget.setObjectName("listWidget")
+        self.label_4 = QtWidgets.QLabel(Form)
+        self.label_4.setGeometry(QtCore.QRect(10, 190, 81, 31))
+        self.label_4.setStyleSheet("font: 10pt \"华文行楷\";")
+        self.label_4.setObjectName("label_4")
+        self.pushButton = QtWidgets.QPushButton(Form)
+        self.pushButton.setGeometry(QtCore.QRect(680, 190, 93, 28))
+        self.pushButton.setStyleSheet("font: 10pt \"华文行楷\";")
+        self.pushButton.setObjectName("pushButton")
+
+        self.retranslateUi(Form)
+        QtCore.QMetaObject.connectSlotsByName(Form)
+        self.pushButton.clicked.connect(Form.start_spite)
+
+    def retranslateUi(self, Form):
+        _translate = QtCore.QCoreApplication.translate
+        Form.setWindowTitle(_translate("Form", "Form"))
+        self.label.setText(_translate("Form", "请输入你要看的漫画的名字:"))
+        self.label_2.setText(_translate("Form", "请输入你要从那一章开始看:"))
+        self.label_3.setText(_translate("Form", "请输入你要从那一章开始看:"))
+        self.label_4.setText(_translate("Form", "下载列表:"))
+        self.pushButton.setText(_translate("Form", "下载"))
+
+class manhua_download(QtWidgets.QMainWindow,Ui_Form):
+    def __init__(self):
+        super(manhua_download,self).__init__()
+        self.setupUi(self)
+        self.setWindowTitle('全能漫画下载器')
+        self.setWindowIcon(QIcon('format.ico'))
+        self.listWidget.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)  #不显示滚动条
+
+    def start_spite(self):
+        name = self.lineEdit.text()   #驭灵师
+        data = requests.get('https://www.onemanhua.com/search?searchString={}'.format(name)).text
+        soup = BeautifulSoup(data,'lxml')     #创建BeautifulSoup对象
+        list = soup.find_all('a',re.compile('\d+'))
+        source = requests.get('https://www.onemanhua.com{}1/12.html'.format(list[1].get('href'))).text
+        page_source = BeautifulSoup(source, 'lxml')
+        list = re.findall('<script src="(.*?)" type=".*?" charset=".*?">',source)
+        for item in list:
+            print(item)    #打印对应的资源链接
+        print(page_source.prettify())     #打印对应的网址源码
+
+if __name__ == '__main__':
+    app = QtWidgets.QApplication(sys.argv)
+    form = manhua_download()
+    form.show()
+    sys.exit(app.exec())
+================================request的请求方式========================================
+import requests
+import json
+
+#发送get请求并得到结果
+# url = 'http://api.nnzhp.cn/api/user/stu_info?stu_name=小黑马 '#请求接口
+# req = requests.get(url)#发送请求
+# print(req.text)#获取请求，得到的是json格式
+# print(req.json())#获取请求，得到的是字典格式
+# print(type(req.text))
+# print(type(req.json()))
+
+#发送post请求,注册接口
+# url = 'http://api.nnzhp.cn/api/user/user_reg'
+# data = {'username':'mpp0130','pwd':'Mp123456','cpwd':'Mp123456'}
+# req = requests.post(url,data)#发送post请求，第一个参数是URL，第二个参数是请求数据
+# print(req.json())
+
+#入参是json
+# url = 'http://api.nnzhp.cn/api/user/add_stu'
+# data = {'name':'mapeipei','grade':'Mp123456','phone':15601301234}
+# req = requests.post(url,json=data)
+# print(req.json())
+
+#添加header
+# url = 'http://api.nnzhp.cn/api/user/all_stu'
+# header = {'Referer':'http://api.nnzhp.cn/'}
+# res = requests.get(url,header)
+# print(res.json())
+
+# 添加cookie
+# url = 'http://api.nnzhp.cn/api/user/gold_add'
+# data = {'stu_id':231,'gold':123}
+# cookie = {'niuhanyang':'7e4c46e5790ca7d5165eb32d0a895ab1'}
+# req = requests.post(url,data,cookies=cookie)
+# print(req.json())
+
+#上传文件
+# url = 'http://api.nnzhp.cn/api/file/file_upload'
+# f = open(r'E:\besttest\te\python-mpp\day7\练习\11.jpg','rb')
+# r = requests.post(url,files={'file':f})
+# users_dic = r.json()
+# print(users_dic)
+
+# 下载文件
+# url = 'http://www.besttest.cn/data/upload/201710/f_36b1c59ecf3b8ff5b0acaf2ea42bafe0.jpg'
+# r = requests.get(url)
+# print(r.status_code)#获取请求的状态码
+# print(r.content)#获取返回结果的二进制格式
+# fw = open('mpp.jpg','wb')
+# fw.write(r.content)
+# fw.close()
+ baseurl = 'http://tieba.baidu.com/f?'
+    params = {
+        'kw': '赵丽颖吧',
+        'pn': '50'
+    }
+    headers = {
+        'User-Agent': 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; WOW64; Trident/4.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; .NET4.0C; InfoPath.3)'}
+    # 自动对params进行编码,然后自动和url进行拼接,去发请求
+    res = requests.get(baseurl, params=params, headers=headers)
+    res.encoding = 'utf-8'
+    print(res.text)
+
+#把浏览器页面下载到本地   保存网页，可以理解为简单的爬虫工具
+url='http://www.nnzhp.cn/archives/630'
+r = requests.get(url)
+f = open('nnzhp.html','wb')
+f.write(r.content)
+f.close()
+===============================喜马拉雅山的音频下载=========================================================
+from PyQt5 import QtCore, QtGui, QtWidgets
+from selenium import webdriver
+import requests,re,json,sys
+from urllib.request import urlretrieve
+from multiprocessing import Pool
+from PyQt5.QtGui import QIcon
+import threading
+import multiprocessing.process
+from concurrent.futures import ThreadPoolExecutor
+
+
+def urlretrieve_down(url, title):
+    urlretrieve(url, '音频/{}.mp3'.format(title))
+
+
+class Ui_Form(object):
+    def setupUi(self, Form):
+        Form.setObjectName("Form")
+        Form.resize(659, 635)
+        Form.setStyleSheet("background-color:rgb(123,255,123);")
+        self.label = QtWidgets.QLabel(Form)
+        self.label.setGeometry(QtCore.QRect(10, 20, 271, 31))
+        self.label.setStyleSheet("font: 12pt \"华文行楷\";")
+        self.label.setObjectName("label")
+        self.lineEdit = QtWidgets.QLineEdit(Form)
+        self.lineEdit.setGeometry(QtCore.QRect(290, 20, 251, 31))
+        self.lineEdit.setStyleSheet("font: 12pt \"华文行楷\";")
+        self.lineEdit.setObjectName("lineEdit")
+        self.listWidget = QtWidgets.QListWidget(Form)
+        self.listWidget.setGeometry(QtCore.QRect(10, 110, 641, 521))
+        self.listWidget.setStyleSheet("font: 12pt \"华文行楷\";")
+        self.listWidget.setObjectName("listWidget")
+        self.label_2 = QtWidgets.QLabel(Form)
+        self.label_2.setGeometry(QtCore.QRect(10, 64, 641, 31))
+        self.label_2.setStyleSheet("font: 12pt \"华文行楷\";")
+        self.label_2.setObjectName("label_2")
+        self.pushButton = QtWidgets.QPushButton(Form)
+        self.pushButton.setGeometry(QtCore.QRect(550, 20, 93, 31))
+        self.pushButton.setStyleSheet("font: 12pt \"华文行楷\";")
+        self.pushButton.setObjectName("pushButton")
+
+        self.retranslateUi(Form)
+        QtCore.QMetaObject.connectSlotsByName(Form)
+        self.pushButton.clicked.connect(Form.start_web)
+
+
+    def retranslateUi(self, Form):
+        _translate = QtCore.QCoreApplication.translate
+        Form.setWindowTitle(_translate("Form", "Form"))
+        self.label.setText(_translate("Form", "请输入你要下载的专辑的ID号:"))
+        self.label_2.setText(_translate("Form", "---------------------------下载列表--------------------------------------"))
+        self.pushButton.setText(_translate("Form", "下载"))
+
+class media_down(QtWidgets.QMainWindow,Ui_Form):
+     def __init__(self):
+         super(media_down,self).__init__()
+         self.setupUi(self)
+         self.setWindowTitle('喜马拉雅音频下载器')
+         self.setWindowIcon(QIcon('format.ico'))
+
+
+     def down_media(self,albumId,page_num):
+         headers = {
+             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:73.0) Gecko/20100101 Firefox/73.0',
+             'Host': 'www.ximalaya.com',
+             'Referer': 'https://s1.xmcdn.com/yx/ximalaya-web-static/last/dist/styles/40ad8.css'
+         }
+         url_album = 'https://www.ximalaya.com/revision/album/v1/getTracksList?albumId={}&pageNum={}'.format(albumId,page_num)
+         html = requests.get(url_album,headers=headers).text
+         # 此时返回的还是json
+         html = json.loads(html)
+         # json转化为python对象
+         html = str(html['data']['tracks'])
+         # 链接的匹配
+         reg = re.compile('\'trackId\': (.*?),')
+         list = re.findall(reg, html)
+         # 如果没有了就返回
+         if len(list) == 0:
+             return False
+         # 名字的匹配
+         reg_name = re.compile('\'title\': \'(.*?)\',')
+         list_name = re.findall(reg_name, html)
+         #  记录下标
+         index = 0
+         #  创建进程池
+         pool = Pool(20)
+         for item in list:
+             data = requests.get('https://www.ximalaya.com/revision/play/v1/audio?id={}&ptype=1'.format(item),                               headers=headers).text
+             data = json.loads(data)
+             pool.apply_async(urlretrieve_down,(data['data']['src'], list_name[index]))  #传入到进程池中的函数必须是顶级函数
+             #也就是说其中的资源(函数)不能是共用的，就是说主进程和子进程中只能有且只有一个占用该资源，相当于分开了
+             self.listWidget.addItem(list_name[index] + ':' + data['data']['src'] + '下载完成!')
+             index = index + 1
+         pool.close()
+         pool.join()
+         return True
+
+
+     def start_web(self):
+         albumId = self.lineEdit.text()   #33620874
+         self.listWidget.addItem('下载中......')
+         thread_01 = threading.Thread(target=self.thread_down,args=(albumId,))
+         thread_01.start()
+
+
+     def thread_down(self,albumId):
+         # 记录下标
+         page_num = 1
+         while self.down_media(albumId,page_num) is not False:
+             page_num = page_num + 1  # 调用对应的下载函数,循环体不做任何处理
+         self.listWidget.addItem('下载完成')
+
+
+if __name__ == '__main__':
+    app = QtWidgets.QApplication(sys.argv)
+    form = media_down()
+    form.show()
+    sys.exit(app.exec())
+=================================模拟手机浏览器=================================================================
+from selenium import webdriver
+from time import sleep
+
+
+if __name__ == '__main__':
+    user_agent = 'Mozilla/5.0 (iPhone; CPU iPhone OS 13_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.5 Mobile/15E148 Safari/604.1'
+    mobileEmulation = {"deviceMetrics": {"width": 1000, "height": 800}, "userAgent": user_agent}
+    options = webdriver.ChromeOptions()
+    options.add_experimental_option('mobileEmulation', mobileEmulation)
+    driver = webdriver.Chrome(executable_path='G:\chromedriver_win32\chromedriver.exe', options=options)
+    driver.get('http://v.sigu.me/index.php')
+=================================B站发送弹幕=======================================================================
+import requests
+import re
+
+def send_message(word):
+    url = 'https://api.bilibili.com/x/v2/dm/post'
+    headers = {
+        'Accept': '*/*',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Accept-Language': 'zh-CN,zh;q=0.9',
+        'Connection': 'keep-alive',
+        'Content-Length': '202',
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        'Host': 'api.bilibili.com',
+        'Origin': 'https://www.bilibili.com',
+        'Referer': 'https://www.bilibili.com/bangumi/play/ss22088/?from=search&seid=14499112141936801700',
+        'Sec-Fetch-Dest': 'empty',
+        'Sec-Fetch-Mode': 'cors',
+        'Sec-Fetch-Site': 'same-site',
+        'Cookie': 'INTVER=1; bsource=seo_baidu; _uuid=784950F1-6AEF-4C6A-FC54-42F38F3F847737587infoc; buvid3=2D523B4C-A186-42EC-9A56-5598C8D796A253929infoc; CURRENT_FNVAL=16; sid=ileasigz; DedeUserID=408666932; DedeUserID__ckMd5=7c9075209252c925; SESSDATA=9f098f6c%2C1599643408%2C03bb8*31; bili_jct=64d67489dbbc0d591398034f7d69ba62; LIVE_BUVID=AUTO8815840914112913; rpdid=|(um~u)YmmJk0Jul)R | muRJY',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36'
+    }
+    words = {
+        'type': '1',
+        'oid': '129528808',
+        'msg': word,
+        'aid': '58842093',
+        'bvid':'',
+        'progress': '14845',
+        'color': '16777215',
+        'fontsize': '25',
+        'pool': '0',
+        'mode': '1',
+        'rnd': '1584091409797147',
+        'plat': '1',
+        'csrf': '64d67489dbbc0d591398034f7d69ba62'
+    }
+    data = requests.post(url=url, data=words, headers=headers).text
+    reg = re.compile('"message":"(.*?)"')
+    data = re.findall(reg,data)
+    if data[0]=='0':
+      data[0] = '发送成功!'
+    print(r'发送结果:'+data[0])
+
+if __name__ == '__main__':
+    while True:
+        string = input("请输入你要发送的弹幕:")
+        send_message(string)
+================================================主线程与子线程的退出关系===============================================================
+#默认情况下，主线程与子线程是先主线程结束在子线程结束
+#thread_01.setDaemon(True)    #定义一个守护线程，当主线程结束后，子线程也结束
+#thread_01.join()  主线程结束时不会立即退出而是等待子线程结束后
+data = 15
+print('%.2f%%'%data) 第一个%表示格式，两个%表示一个，第四个便是一个的数据来源
+ baseurl = 'http://tieba.baidu.com/f?'
+    params = {
+        'kw': '赵丽颖吧',
+        'pn': '50'
+    }
+    headers = {
+        'User-Agent': 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; WOW64; Trident/4.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; .NET4.0C; InfoPath.3)'}
+    # 自动对params进行编码,然后自动和url进行拼接,去发请求
+    res = requests.get(baseurl, params=params, headers=headers)
+    res.encoding = 'utf-8'
+    print(res.text)
+=======================================================================================================================================
+import requests
+from lxml import etree
+import os
+
+class NoteSpider(object):
+    def __init__(self):
+        self.url = 'http://code.com.cn/Code/aid1904/redis/'
+        self.headers = {'User-Agent':'Mozilla/5.0'}
+        self.auth = ('code','code_2013')
+
+    # 获取
+    def get_html(self):
+        html = requests.get(url=self.url,auth=self.auth,headers=self.headers).text
+        return html
+
+    # 解析提取数据 + 把笔记压缩包下载完成
+    def parse_page(self):
+        html = self.get_html()
+        xpath_bds = '//a/@href'
+        parse_html = etree.HTML(html)
+        # r_list : ['../','day01','day02','redis_day01.zip']
+        r_list = parse_html.xpath(xpath_bds)
+        for r in r_list:
+            if r.endswith('zip') or r.endswith('rar'):
+                print(r)
+
+if __name__ == '__main__':
+    spider = NoteSpider()
+    spider.parse_page()
+===================================================scrapy爬虫=====================================================================
+import scrapy
+
+
+#scrapy startproject 项目名
+#scrapy genspider 爬虫名 网站域名
+#scrapy crawl BlogSpider -o ip.json
+
+class BlogspiderSpider(scrapy.Spider):
+    name = 'BlogSpider'
+    allowed_domains = ['xicidaili.com']
+    #start_urls = ['https://www.xicidaili.com/nn/2']
+    start_urls = ['https://www.xicidaili.com/nn/2']
+    #start_urls = ['https://www.xicidaili.com/nn/{page}' for page in range(1,20)] #列表推导式
+
+    def parse(self, response):
+       # selectors = response.xpath('//tr')
+       # for selector in selectors:
+       #     ip = selector.xpath('./td[2]/text()').get()
+       #     port = selector.xpath('./td[3]/text()').get()
+       #     if ip != None and port != None:
+       #        item = {
+       #            'ip':ip,
+       #            'port':port
+       #        }
+       #        yield item
+       #next_page = response.selector.re('<a class="next_page" rel="next" href="(.*?)">下一页 ›</a>')  #正则
+       print(response.text)
+       next_page = response.xpath('//a[@class="next_page"]/@href').getall()                          #xpath
+       print(next_page)
+       print('over')
+
+       # if next_page != None:
+       #     print(next_page[0])
+           # next_url = response.urljoin(next_page[0])
+           # print(next_url)
+           # yield scrapy.Request(next_url,callback=self.parse)
+
+
+scrapy startproject mycrawl
+cd mycrawl
+scrapy genspider -t crawl myFirst baidu.com
+
+
+==================================================BeautifulSoup===================================================================
+soup.find_all('a') 找到所有a
+
+soup.find_all('a', limit=2) 提取符合要求的前两个a
+
+soup.find_all(['a', 'li']) 查找得到所有的a和li
+
+soup.find_all('a', class_='xxx')查找得到所有class是xxx的a
+
+soup.find_all('li', class_=re.compile(r'^xiao'))
+例子:
+import requests
+from bs4 import BeautifulSoup #bs4只能解析html格式的数据，利用BeautifulSoup类
+from lxml import etree
+#lxml是python的一个解析库，支持HTML和XML的解析，支持XPath解析方式，而且解析效率非常高
+
+
+if __name__ == '__main__':
+    data = requests.get('https://blog.csdn.net/qq_41412011/article/details/86086656').text
+    #data.encode('utf-8') #设置编码
+    soup = BeautifulSoup(data, 'lxml') # 1、数据 2、解析方式(python自带的有html.parser,第三方lxml:解析速度快)
+    #相当于360浏览器嵌套了一个谷歌的内核提高查找的效率
+    print(soup.prettify()) #'find(name,attrs,text,recursive,**kwargs)'
+    #soup.find_all(re.compile('^b')) 可以传入正则表达式
+    list = soup.find_all('script') #find的返回值是个tag对象
+    for item in list:
+     print(item.get('src'))      #可通过get进一步去获取他的属性值
+     #select() 返回类型是 list，元素也是tag
+     #print(soup.select('b'))
+     #[<b>The Dormouse's story</b>]
+========================================进度条=============================================================================
+from tqdm import tqdm
+from time import sleep
+
+
+with tqdm(total=1000) as file:
+    for item in range(50):
+        file.update(20)
+        sleep(0.1)
+===============================================python的列表推导式=============================================================
+a = [item for item in range(1,100) if item % 2 == 0]
+或a = [item for item in range(1,100，2) if item % 2 == 0]  列表推导式加步长
+或a = [item if item % 2 == 0 else 0 for item in range(1,100)]  列表推导式加三目运算
+print(a)
+=============================================代理池下载小说===================================================================
+import requests
+import parsel
+from bs4 import BeautifulSoup
+from lxml import  etree
+import re
+from multiprocessing import Pool   #进程池
+from multiprocessing.dummy import Pool   #线程池
+import threading  #单线程
+########################################################################################################
+# pool = Pool(20)
+# for item in list:
+#     data = requests.get('https://www.ximalaya.com/revision/play/v1/audio?id={}&ptype=1'.format(item),
+#                         headers=headers).text
+#     data = json.loads(data)
+#     pool.apply_async(urlretrieve_down, (data['data']['src'], list_name[index]))  # 传入到进程池中的函数必须是顶级函数
+#     # 也就是说其中的资源(函数)不能是共用的，就是说主进程和子进程中只能有且只有一个占用该资源，相当于分开了
+#     self.listWidget.addItem(list_name[index] + ':' + data['data']['src'] + '下载完成!')
+#     index = index + 1
+# pool.close()
+# pool.join()
+##########################################################################################################
+# thread_01 = threading.Thread(target=self.thread_down,args=(albumId,))
+#          thread_01.start()
+##########################################################################################################
+def get_Ip():
+    header = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36 Edg/80.0.361.66'
+    }
+    IP_list = []  # 用列表创建代理IP池
+    with open('IP.txt', 'r') as file:
+        list = file.readlines()
+        for item in list:
+            ip = item[item.index(':') + 1:item.index('-')]
+            port = item[item.index('-') + 3:-1]
+            it = {'https': 'https://{}:{}'.format(ip, port)}
+            IP_list.append(it)
+    return IP_list
+
+def check_Ip(list):
+    header = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36 Edg/80.0.361.66'
+    }
+    ip_Enable = []  #保存可用的代理列表
+    ip_disEnable = [] #保存不可用的代理列表
+    for proxy in list:
+        try:
+            session = requests.Session()
+            response = session.get('http://www.530p.com/',headers=header,proxies=proxy,timeout=0.1,)
+            response.encoding = 'GBK'
+            if response.status_code == 200:
+                print(str(proxy)+'代理成功!')
+        except Exception as e:
+            ip_disEnable.append(proxy)
+        else:
+            ip_Enable.append(proxy)
+    print('可用ip数位:'+str(len(ip_Enable))+',不可用的ip数为:'+str(len(ip_disEnable)))
+    return ip_Enable   #将可用的高质量代理返回，相当于进行了筛选
+
+def start_job(list):
+    header = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36 Edg/80.0.361.66',
+        'Connection': 'close'
+    }
+    next_page = '/xuanhuan/douluodalu-15077/1256268.htm'
+    count_page = 1
+    with open('read.txt','w+') as file:
+        for proxy in list:
+            print('当前代理为:' + str(proxy))
+            try:
+                while count_page <= 300:
+                    url = 'http://www.530p.com{}'.format(next_page)
+                    data = requests.get(url, headers=header, proxies=proxy,timeout=5)
+                    data.encoding = 'GBK'
+                    #.encode('iso-8859-1').decode(code[index])这也是一种解决乱码的方式，将源码先用encode统一编为单字节
+                    #再变为自己喜欢的双字节从而解决汉字乱码
+                    if data.status_code == 200:
+                        # parsel的使用
+                        # html = parsel.Selector(data.text)
+                        # src = html.xpath('//a[@class=\'active\']/@href').get()   #通过xpath可以直接定位dom元素和他的属性及text
+                        # src = html.css('a.active').re('href="(.*?)"')    #通过css选择器可以直接定位到tag，但是还要通过re去匹配他的属性
+                        # BeautifulSoup的使用
+                        # soup = BeautifulSoup(data.text,'lxml')
+                        # src = soup.find('a',class_='active').get('href')   #可以通过find去找到对应的tag再通过get得到属性
+                        # text = soup.find('a', class_='active').text #可以通过find去找到对应的tag再通过text得到文本
+                        # src = soup.select('a.active')[0].get('href')  #select返回的是个列表，主要通过get去的到属性
+                        # src = soup.select('a.active')[0].text  #select返回的是个列表，主要通过text去的到文本
+                        # lxml的使用
+                        html = etree.HTML(data.text)
+                        # src = html.xpath('//a[@class=\'active\']/@href')[0]   #这个xpath返回的是个列表
+                        # src = html.xpath('//a[@class=\'active\']/text()')[0]  #这个xpath返回的是个列表
+                        # src = html.xpath('string(//ul)']/text()')[0]  #这个xpath返回的是ul下的全部文本
+                        # src = html.xpath('string(//ul)']/text()')[0]  #这个xpath返回的是ul下的全部文本
+                        # src = html.xpath('string(‘.’)']/text()')[0]  #这个xpath返回的是当前节点下的全部文本
+                        # src = html.xpath('//a[starts-with(@class,\'abc\')]/text()')[0]  #这个xpath返回的是class以abc开头的a
+                        # html = parsel.Selector(data.text)
+                        # list = html.xpath('//div[@id="cp_content"]/text()').extract()
+                        # xpath和css秀够了,接下来就是正则表演的时候了-------对乱码纠正后的str进行匹配
+                        title = str(html.xpath('//div[@id="cps_title"]/h1/text()'))
+                        reg = re.compile('\'(.*)\'')
+                        title = re.findall(reg, title)
+                        print(title[0] + '\n')
+                        file.write(title[0] + '\n')
+                        src = str(html.xpath('//div[@id="cp_content"]/text()'))
+                        # src1 = str(html.xpath('//div[@id="cp_content"]/text()'))
+                        # temp = re.search(r', \'(.*?)\'',src1).group(1)
+                        # temp = re.search(r'^\\u3000\\u3000(.*?)。',temp).group(1)
+                        # print(temp)
+                        src = re.findall(', \'(.*?)\'', src)
+                        for item in src:
+                            item = re.sub(r'\\u3000\\u3000', '', item)
+                            file.write(item + '\n')
+                        next_page = html.xpath('//a[@id="nextLink"]/@href')[0]
+                        count_page = count_page + 1
+                        file.write('\n')
+                return
+            except Exception as e:
+                print(e)
+
+
+
+if __name__ == '__main__':
+    list = get_Ip()
+    list = check_Ip(list)
+    start_job(list)
+========================================反爬虫方法总结=======================================================================
+1、selenium，直接打开一个网页
+2、设置User-Agent
+3、保存cookie，以登入的状态去爬取
+4、设置sleep，人为的去控制爬取得节奏
+5、设置代理池，防止ip被封
+6、优先爬取移动端，前提是内容一致
+=======================================爬取App的数据----漫画下载======================================================================
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+import requests
+import parsel
+from lxml import etree
+import time
+import re
+
+def down_manhua(title,list):
+    option = webdriver.ChromeOptions()
+    user_agent = 'Mozilla/5.0 (iPhone; CPU iPhone OS 13_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.5 Mobile/15E148 Safari/604.1'
+    mobileEmulation = {"deviceMetrics": {"width": 1080, "height": 1920}, "userAgent": user_agent}
+    option.add_experimental_option('mobileEmulation', mobileEmulation)
+    # option.add_experimental_option('excludeSwitches',['enable-automation'])
+    option.add_argument('headless')
+    driver = webdriver.Chrome(executable_path='E://AJAX//chromedriver_win32//chromedriver.exe', options=option)
+    with open('man.txt','w') as file:
+        for item1,item2 in zip(title,list):
+            driver.get('http://m.6mh6.com{}'.format(item2))
+            driver.implicitly_wait(3)
+            html = etree.HTML(driver.page_source)
+            img = html.xpath('//div[@class="chapter-img-box"]/img/@data-original')
+            print(item1)
+            file.write(item1+'\n')
+            for it in img:
+                print(it)
+                file.write(it+'\n')
+
+if __name__ == '__main__':
+    option = webdriver.ChromeOptions()
+    user_agent = 'Mozilla/5.0 (iPhone; CPU iPhone OS 13_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.5 Mobile/15E148 Safari/604.1'
+    mobileEmulation = {"deviceMetrics": {"width": 1080, "height": 1920}, "userAgent": user_agent}
+    option.add_experimental_option('mobileEmulation', mobileEmulation)
+    # option.add_experimental_option('excludeSwitches',['enable-automation']) 避免网站监测
+    option.add_argument('headless')
+    driver = webdriver.Chrome(executable_path='E://AJAX//chromedriver_win32//chromedriver.exe',options=option)
+    driver.get('http://m.6mh6.com/search')
+    name = input('请输入你想看的漫画:') #全职法师
+    driver.find_element_by_id('search').send_keys(name)
+    driver.find_element_by_class_name('searh-btn').click()
+    driver.implicitly_wait(3)
+    driver.find_element_by_class_name('cartoon-poster').click()
+    driver.implicitly_wait(3)
+    driver.find_element_by_xpath('//dd[@class="gengduo_dt1"]/a').click()
+    time.sleep(20)
+    html = etree.HTML(driver.page_source)
+    list = html.xpath('//div[@id="chapter-list1"]/a/@href')
+    title = html.xpath('//div[@id="chapter-list1"]/a/li/p/text()')
+    for item1,item2 in zip(title,list):
+        print(item1+'---'+item2)
+    driver.close()
+    down_manhua(title,list)
+
+
+'Cookie': 'JSESSIONID=C5524CEE398E60EC5E94C98F0610DF4B; tk=skaBUasYdDIC6jfpbE40KxspyXc6dtw3CV5J1A51M1M0; RAIL_EXPIRATION=1585266315402; RAIL_DEVICEID=BNUSOt3qymg81QTUz4ZM3xIWCx-dLZH6k4faKsisdTel5BqaR6BIvj99vaBlyGYGbxcewMVuYXXwDxVtVf79SZMLKBmmDA21LSiRybaST3I0md78ot5GWApqLxkOc2pkdSHOwPH-lpp46fVUCg98fbvWf7NgTIDk; BIGipServerpool_passport=351076874.50215.0000; route=495c805987d0f5c8c84b14f60212447d; BIGipServerotn=821035530.64545.0000'
+###################################################header头的正则匹配###########################################################
+import re
+
+
+headers = '''
+donotcache: 1585402419331
+password: SuWS/MXxT11ZXEyxnahF5utAqSaEUI8aH1CmrxaAPvzTn8XCrKpJTUgUNZ+QlKbIgl40ODfeu8S+WGAAuKiqP/Zy0Vfjkw5WF5uHU0cMNHqJAfnBJNgSs50m32QWBW9+Wcjr3MwBg8+4nml1y1GwS8vXKY54Z8dK+i61H0V/ZDpF2zIssq751SpGfVxkc5D9LecfJgQjgFXGzAfmHQxauW6D9KtWQTaKU5/Bbc52MF6alPYsdGF4Juhmal2WhMDM5xiS5ED7kDHxtEwo9g6eOUWxnW8kmhUnCbsi15CqWQFLeqogDs2zJZ2wDDk8bPpVoWi4RXSdNawsCGJ6/zIzIg==
+username: szw_zhang
+twofactorcode: 
+emailauth: 
+loginfriendlyname: 
+captchagid: -1
+captcha_text: 
+emailsteamid: 
+rsatimestamp: 309726550000
+remember_login: false
+'''
+
+pattern = '^(.*?): (.*?)$' #^以什么开头，$以什么结尾
+for line in headers.splitlines():  #splitlines()根据换行符（\n）分割并将元素放入列表中
+    print(re.sub(pattern,'\'\\1\': \'\\2\',',line)) #按pattern从line匹配出字符串再被替换成'\'\\1\': \'\\2\'
+===================================================喜马拉雅试听下载===================================================
+import requests
+from pprint import pprint
+from urllib.parse import unquote
+from time import sleep
+
+
+if __name__ == '__main__':
+    music_input = input('请输入音频id:')
+    head = {'Host': 'tool.520lsj.cn',
+            'Origin': 'http://tool.520lsj.cn',
+            'Referer': 'http://tool.520lsj.cn/yy/',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36',
+            'X-Requested-With': 'XMLHttpRequest'} #X-Requested-With 表示异步请求ajax，与普通请求不同
+    postData = {'music_input': music_input,
+                'music_filter': 'id',
+                'music_type': 'ximalaya'}
+    response = requests.post('http://tool.520lsj.cn/yy/',data=postData,headers=head)
+    response = response.json()
+    music_name = response['data'][0]['name']
+    url = response['data'][0]['music']
+    #show
+    head = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36'}
+    response = requests.get(url,headers=head)
+    response.encoding = 'utf-8'
+    with open('{}.mp3'.format(music_name),'wb') as file:
+        file.write(response.content)
+    print('{},下载完成!'.format(music_name))
+====================================================steam破解========================================================================
+import requests
+import time
+import execjs
+from pprint import pprint
+
+if __name__ == '__main__':
+    #1
+    session = requests.session()
+    username = input('请输入您的用户名:')
+    password = input('请输入您的密码:')
+    donotcache = int(time.time()*1000)
+    head = {'Host': 'store.steampowered.com',
+            'Origin': 'https://store.steampowered.com',
+            'Referer': 'https://store.steampowered.com/login/?redir=&redir_ssl=1',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36',
+            'X-Requested-With': 'XMLHttpRequest'}
+    postData = {'donotcache': donotcache,
+                'username': username,}
+    response = session.post('https://store.steampowered.com/login/getrsakey/',data=postData,headers=head)
+    response = response.json()
+    publickey_mod = response['publickey_mod']
+    publickey_exp = response['publickey_exp']
+    timestamp = response['timestamp']
+    with open('01_spider.js','r',encoding='utf-8') as file:
+        JsData = file.read()
+    password = execjs.compile(JsData).call('func',password,publickey_mod,publickey_exp)
+    #2
+    donotcache = int(time.time() * 1000)
+    head = {'Host': 'store.steampowered.com',
+            'Origin': 'https://store.steampowered.com',
+            'Referer': 'https://store.steampowered.com/login/?redir=&redir_ssl=1',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36',
+            'X-Requested-With': 'XMLHttpRequest'}
+    postData = {'donotcache': donotcache,
+                'password': password,
+                'username': username,
+                'twofactorcode': '',
+                'emailauth': '',
+                'loginfriendlyname': '',
+                'captchagid': '-1',
+                'captcha_text': '',
+                'emailsteamid': '',
+                'rsatimestamp': timestamp,
+                'remember_login': 'false',}
+    response = session.post('https://store.steampowered.com/login/dologin/',data=postData,headers=head)
+    response = response.json()
+    pprint(response['message'])
+
+
+##############################python安装国内镜像##########################################
+给Python添加镜像源
+不管是用npm还是pip等包管理工具的时候，国内最好都是换下相关的镜像源，要不然你就只能龟速下载了...
+
+可用镜像源
+清华：https://pypi.tuna.tsinghua.edu.cn/simple
+阿里云：http://mirrors.aliyun.com/pypi/simple/
+中国科技大学：https://pypi.mirrors.ustc.edu.cn/simple/
+华中理工大学：http://pypi.hustunique.com/
+山东理工大学：http://pypi.sdutlinux.org/
+豆瓣：http://pypi.douban.com/simple/
+添加pip.ini
+在C:\Users\Administrator下新建一个pip文件夹，在文件夹中新建一个pip.ini文件：
+创建pip文件夹
+在pip.ini中添加以下内容，之后再用pip下载包就可以体验飞速下载了：
+#########################################################################################
+PyQt5的配置:
+添加PyUIC
+Programs:的地方找到你自己的designer.exe所在的位置
+Working directory:的地方填上$ProjectFileDir$ (填$FileDir$好像也行)。
+添加PyUIC
+Programs:的地方找到你自己的python.exe所在的位置
+Arguments:的地方填上-m PyQt5.uic.pyuic $FileName$ -o $FileNameWithoutExtension$.py
+Working directory:的地方填上$FileDir$
+#########################################################################################

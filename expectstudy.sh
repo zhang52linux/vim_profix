@@ -1,6 +1,8 @@
 #!/bin/bash
 
 git add *
+git add .vimrc
+git status
 git commit -m "add linux.pptx"
 
 

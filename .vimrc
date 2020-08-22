@@ -20,13 +20,14 @@ Plug 'Shougo/neosnippet.vim'
 Plug 'Shougo/neosnippet-snippets'
 Plug 'andialbrecht/sqlparse'
 Plug 'jiangmiao/auto-pairs'
+Plug 'morhetz/gruvbox'
 
 call plug#end()
 
-
-set encoding=utf-8
+syntax on  
+set fileencodings=ucs-bom,utf-8,utf-16,gbk,big5,gb18030,latin1  
+set fileencoding=utf-8  
 set number
-syntax on
 " echo has("clipboard") 查看vim的编译选项中是否有clipboard
 set clipboard=unnamed "有clipboard的话可以让你直接复制粘贴系统剪切板的内容
 set smartindent
@@ -248,3 +249,5 @@ exec "w"
 exec "!g++ % -o %<"
 exec "! ./%<"
 endfunc
+
+colorscheme gruvbox

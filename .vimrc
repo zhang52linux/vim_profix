@@ -29,6 +29,8 @@ set fileencodings=ucs-bom,utf-8,utf-16,gbk,big5,gb18030,latin1
 set encoding=utf-8
 set fileencoding=utf-8  
 set number
+set incsearch    " 增量搜索
+set hls          " 高亮显示 :noh 取消高亮
 " echo has("clipboard") 查看vim的编译选项中是否有clipboard
 set clipboard=unnamed "有clipboard的话可以让你直接复制粘贴系统剪切板的内容
 set smartindent

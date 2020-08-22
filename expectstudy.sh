@@ -14,8 +14,8 @@ expect {
     "Username" { send "$username\r"; exp_continue }
     "Password" { send "$password\r" }
 }
-interact
-# expect "$"
+# interact
+expect "$"
 EOF
 done < ~/passwd.txt
 

@@ -1,6 +1,14 @@
 #!/bin/bash
 
-cat <<-EOF
-        h    显示命令帮助
-        f    显示磁盘分区 
-       EOF
+case $1 in
+    "1")
+        echo "周一"
+        ;;
+    "2")
+        echo "周二"
+        ;;
+    *)
+        echo "other"
+        ;;
+esac
+

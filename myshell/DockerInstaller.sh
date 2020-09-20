@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # uninstall old version
-sudo pt-get remove docker docker-engine docker.io containerd runc
+sudo apt remove docker docker-engine docker.io containerd runc
 
 #Install using the repository
-sudo apt-get install -y \
+sudo apt install -y \
     apt-transport-https \
     ca-certificates \
     curl \
@@ -24,8 +24,8 @@ sudo add-apt-repository \
    stable"
 
 #INSTALL DOCKER ENGINE
-sudo apt-get update
-sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+sudo apt update
+sudo apt install -y docker-ce docker-ce-cli containerd.io
 
 #update download repository
 sudo mkdir -p /etc/docker
